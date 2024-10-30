@@ -1,0 +1,30 @@
+{
+  "bf16": {
+    "enabled": true
+  },
+  "zero_optimization": {
+    "stage": 3,
+    "offload_param": {
+      "device": "cpu",
+      "pin_memory": true
+    },
+    "offload_optimizer": {
+      "device": "cpu",
+      "pin_memory": true
+    },
+    "stage3_gather_16bit_weights_on_model_save": true,
+    "memory_efficient_linear": true
+  },
+  "optimizer": {
+    "type": "Adam",
+    "params": {
+      "lr": "auto",
+      "betas": "auto",
+      "eps": "auto",
+      "weight_decay": "auto"
+    }
+  },
+  "train_batch_size": "auto",
+  "train_micro_batch_size_per_gpu": "auto",
+  "gradient_accumulation_steps": "auto"
+}

@@ -1,0 +1,50 @@
+{
+  "data": {
+    "train_filelist_path": "voicebox/filelists/YOUR_DATA_NAME/train.txt",
+    "valid_filelist_path": "voicebox/filelists/YOUR_DATA_NAME/valid.txt",
+    "test_filelist_path": "voicebox/filelists/YOUR_DATA_NAME/test.txt",
+    "token_sr": 50,
+    "n_feats": 80,
+    "n_fft": 1024,
+    "hop_length": 256,
+    "win_length": 1024,
+    "sampling_rate": 22050,
+    "n_tokens": 10000,
+    "mean": -5.5419,
+    "std": 2.1575,
+    "mel_fmin": 0.0,
+    "mel_fmax": 8000.0
+  },
+  "model": {
+    "embedding_dim": 1280,
+    "hidden_size": 1024,
+    "intermediate_size": 4096,
+    "num_attention_heads": 16,
+    "num_hidden_layers": 24,
+    "convpos_width": 31,
+    "convpos_groups": 16,
+    "convpos_depth": 2,
+    "attention_dropout": 0.0,
+    "activation_dropout": 0.1,
+    "hidden_dropout": 0.0,
+    "solver": "euler",
+    "sigma_min": 0.0001
+  },
+  "train": {
+    "test_size": 4,
+    "n_epochs": 10000,
+    "batch_size": 8,
+    "p_uncond": 0.2,
+    "p_drop": 0.3,
+    "r_min": 0.7,
+    "r_max": 1.0,
+    "num_workers": 2,
+    "val_batch_size": 16,
+    "learning_rate": 1e-4,
+    "seed": 37,
+    "save_every": 1,
+    "out_size_second": 16,
+    "fp16_run": true,
+    "reverse_step": 50
+  }
+}
