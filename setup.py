@@ -14,7 +14,6 @@ def _init_submodules():
 
 def _install_submodules():
     submodules = [
-        'src/encoder',
         'src/decoder',
     ]
     for submodule in submodules:
@@ -25,7 +24,6 @@ def _install_submodules():
 
 class CustomInstallCommand(install):
     def run(self):
-        _init_submodules()
         _install_submodules()
         super().run()
 
@@ -48,6 +46,7 @@ setup(
         'psutil==6.1.0',
         'scikit-learn==1.5.2',
         'scipy==1.11.4',
+        "seamless_communication @ git+https://github.com/facebookresearch/seamless_communication.git@90e2b57",
         'streamlit==1.39.0',
         'tensorboardx==2.6.2.2',
         'tokenizers==0.19.1',

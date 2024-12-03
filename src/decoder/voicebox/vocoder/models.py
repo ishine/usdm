@@ -13,7 +13,7 @@ from huggingface_hub import PyTorchModelHubMixin, hf_hub_download
 
 import voicebox.vocoder.activations as activations
 from voicebox.vocoder.env import AttrDict
-from voicebox.vocoder.xutils import init_weights, get_padding
+from voicebox.vocoder.utils import init_weights, get_padding
 from voicebox.vocoder.alias_free_torch import *
 
 LRELU_SLOPE = 0.1

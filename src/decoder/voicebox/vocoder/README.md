@@ -1,105 +1,95 @@
-# HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis
+## BigVGAN: A Universal Neural Vocoder with Large-Scale Training
+#### Sang-gil Lee, Wei Ping, Boris Ginsburg, Bryan Catanzaro, Sungroh Yoon
 
-### Jungil Kong, Jaehyeon Kim, Jaekyoung Bae
-
-In our [paper](https://arxiv.org/abs/2010.05646), 
-we proposed HiFi-GAN: a GAN-based model capable of generating high fidelity speech efficiently.<br/>
-We provide our implementation and pretrained models as open source in this repository.
-
-**Abstract :**
-Several recent work on speech synthesis have employed generative adversarial networks (GANs) to produce raw waveforms. 
-Although such methods improve the sampling efficiency and memory usage, 
-their sample quality has not yet reached that of autoregressive and flow-based generative models. 
-In this work, we propose HiFi-GAN, which achieves both efficient and high-fidelity speech synthesis. 
-As speech audio consists of sinusoidal signals with various periods, 
-we demonstrate that modeling periodic patterns of an audio is crucial for enhancing sample quality. 
-A subjective human evaluation (mean opinion score, MOS) of a single speaker dataset indicates that our proposed method 
-demonstrates similarity to human quality while generating 22.05 kHz high-fidelity audio 167.9 times faster than 
-real-time on a single V100 GPU. We further show the generality of HiFi-GAN to the mel-spectrogram inversion of unseen 
-speakers and end-to-end speech synthesis. Finally, a small footprint version of HiFi-GAN generates samples 13.4 times 
-faster than real-time on CPU with comparable quality to an autoregressive counterpart.
-
-Visit our [demo website](https://jik876.github.io/hifi-gan-demo/) for audio samples.
+<center><img src="https://user-images.githubusercontent.com/15963413/218609148-881e39df-33af-4af9-ab95-1427c4ebf062.png" width="800"></center>
 
 
-## Pre-requisites
-1. Python >= 3.6
-2. Clone this repository.
-3. Install python requirements. Please refer [requirements.txt](requirements.txt)
-4. Download and extract the [LJ Speech dataset](https://keithito.com/LJ-Speech-Dataset/).
-And move all wav files to `LJSpeech-1.1/wavs`
+### [Paper](https://arxiv.org/abs/2206.04658)
+### [Audio demo](https://bigvgan-demo.github.io/)
 
+## Installation
+Clone the repository and install dependencies.
+```shell
+# the codebase has been tested on Python 3.8 / 3.10 with PyTorch 1.12.1 / 1.13 conda binaries
+git clone https://github.com/NVIDIA/BigVGAN
+pip install -r requirements.txt
+```
+
+Create symbolic link to the root of the dataset. The codebase uses filelist with the relative path from the dataset. Below are the example commands for LibriTTS dataset.
+``` shell
+cd LibriTTS && \
+ln -s /path/to/your/LibriTTS/train-clean-100 train-clean-100 && \
+ln -s /path/to/your/LibriTTS/train-clean-360 train-clean-360 && \
+ln -s /path/to/your/LibriTTS/train-other-500 train-other-500 && \
+ln -s /path/to/your/LibriTTS/dev-clean dev-clean && \
+ln -s /path/to/your/LibriTTS/dev-other dev-other && \
+ln -s /path/to/your/LibriTTS/test-clean test-clean && \
+ln -s /path/to/your/LibriTTS/test-other test-other && \
+cd ..
+```
 
 ## Training
+Train BigVGAN model. Below is an example command for training BigVGAN using LibriTTS dataset at 24kHz with a full 100-band mel spectrogram as input.
+```shell
+python train.py \
+--config configs/bigvgan_24khz_100band.json \
+--input_wavs_dir LibriTTS \
+--input_training_file LibriTTS/train-full.txt \
+--input_validation_file LibriTTS/val-full.txt \
+--list_input_unseen_wavs_dir LibriTTS LibriTTS \
+--list_input_unseen_validation_file LibriTTS/dev-clean.txt LibriTTS/dev-other.txt \
+--checkpoint_path exp/bigvgan
 ```
-python train.py --config config_v1.json
+
+## Synthesis
+Synthesize from BigVGAN model. Below is an example command for generating audio from the model.
+It computes mel spectrograms using wav files from `--input_wavs_dir` and saves the generated audio to `--output_dir`.
+```shell
+python inference.py \
+--checkpoint_file exp/bigvgan/g_05000000 \
+--input_wavs_dir /path/to/your/input_wav \
+--output_dir /path/to/your/output_wav
 ```
-To train V2 or V3 Generator, replace `config_v1.json` with `config_v2.json` or `config_v3.json`.<br>
-Checkpoints and copy of the configuration file are saved in `cp_hifigan` directory by default.<br>
-You can change the path by adding `--checkpoint_path` option.
 
-Validation loss during training with V1 generator.<br>
-![validation loss](./validation_loss.png)
+`inference_e2e.py` supports synthesis directly from the mel spectrogram saved in `.npy` format, with shapes `[1, channel, frame]` or `[channel, frame]`.
+It loads mel spectrograms from `--input_mels_dir` and saves the generated audio to `--output_dir`.
 
-## Pretrained Model
-You can also use pretrained models we provide.<br/>
-[Download pretrained models](https://drive.google.com/drive/folders/1-eEYTB5Av9jNql0WGBlRoi-WH2J7bp5Y?usp=sharing)<br/> 
-Details of each folder are as in follows:
+Make sure that the STFT hyperparameters for mel spectrogram are the same as the model, which are defined in `config.json` of the corresponding model.
+```shell
+python inference_e2e.py \
+--checkpoint_file exp/bigvgan/g_05000000 \
+--input_mels_dir /path/to/your/input_mel \
+--output_dir /path/to/your/output_wav
+```
 
-|Folder Name|Generator|Dataset|Fine-Tuned|
-|------|---|---|---|
-|LJ_V1|V1|LJSpeech|No|
-|LJ_V2|V2|LJSpeech|No|
-|LJ_V3|V3|LJSpeech|No|
-|LJ_FT_T2_V1|V1|LJSpeech|Yes ([Tacotron2](https://github.com/NVIDIA/tacotron2))|
-|LJ_FT_T2_V2|V2|LJSpeech|Yes ([Tacotron2](https://github.com/NVIDIA/tacotron2))|
-|LJ_FT_T2_V3|V3|LJSpeech|Yes ([Tacotron2](https://github.com/NVIDIA/tacotron2))|
-|VCTK_V1|V1|VCTK|No|
-|VCTK_V2|V2|VCTK|No|
-|VCTK_V3|V3|VCTK|No|
-|UNIVERSAL_V1|V1|Universal|No|
+## Pretrained Models
+We provide the [pretrained models](https://drive.google.com/drive/folders/1e9wdM29d-t3EHUpBb8T4dcHrkYGAXTgq).
+One can download the checkpoints of generator (e.g., g_05000000) and discriminator (e.g., do_05000000) within the listed folders.
 
-We provide the universal model with discriminator weights that can be used as a base for transfer learning to other datasets.
+|Folder Name|Sampling Rate|Mel band|fmax|Params.|Dataset|Fine-Tuned|
+|------|---|---|---|---|------|---|
+|bigvgan_24khz_100band|24 kHz|100|12000|112M|LibriTTS|No|
+|bigvgan_base_24khz_100band|24 kHz|100|12000|14M|LibriTTS|No|
+|bigvgan_22khz_80band|22 kHz|80|8000|112M|LibriTTS + VCTK + LJSpeech|No|
+|bigvgan_base_22khz_80band|22 kHz|80|8000|14M|LibriTTS + VCTK + LJSpeech|No|
 
-## Fine-Tuning
-1. Generate mel-spectrograms in numpy format using [Tacotron2](https://github.com/NVIDIA/tacotron2) with teacher-forcing.<br/>
-The file name of the generated mel-spectrogram should match the audio file and the extension should be `.npy`.<br/>
-Example:
-    ```
-    Audio File : LJ001-0001.wav
-    Mel-Spectrogram File : LJ001-0001.npy
-    ```
-2. Create `ft_dataset` folder and copy the generated mel-spectrogram files into it.<br/>
-3. Run the following command.
-    ```
-    python train.py --fine_tuning True --config config_v1.json
-    ```
-    For other command line options, please refer to the training section.
+The paper results are based on 24kHz BigVGAN models trained on LibriTTS dataset.
+We also provide 22kHz BigVGAN models with band-limited setup (i.e., fmax=8000) for TTS applications.
+Note that, the latest checkpoints use ``snakebeta`` activation with log scale parameterization, which have the best overall quality.
 
 
-## Inference from wav file
-1. Make `test_files` directory and copy wav files into the directory.
-2. Run the following command.
-    ```
-    python inference.py --checkpoint_file [generator checkpoint file path]
-    ```
-Generated wav files are saved in `generated_files` by default.<br>
-You can change the path by adding `--output_dir` option.
+## TODO
+
+Current codebase only provides a plain PyTorch implementation for the filtered nonlinearity. We are working on a fast CUDA kernel implementation, which will be released in the future. 
 
 
-## Inference for end-to-end speech synthesis
-1. Make `test_mel_files` directory and copy generated mel-spectrogram files into the directory.<br>
-You can generate mel-spectrograms using [Tacotron2](https://github.com/NVIDIA/tacotron2), 
-[Glow-TTS](https://github.com/jaywalnut310/glow-tts) and so forth.
-2. Run the following command.
-    ```
-    python inference_e2e.py --checkpoint_file [generator checkpoint file path]
-    ```
-Generated wav files are saved in `generated_files_from_mel` by default.<br>
-You can change the path by adding `--output_dir` option.
+## References
+* [HiFi-GAN](https://github.com/jik876/hifi-gan) (for generator and multi-period discriminator)
 
+* [Snake](https://github.com/EdwardDixon/snake) (for periodic activation)
 
-## Acknowledgements
-We referred to [WaveGlow](https://github.com/NVIDIA/waveglow), [MelGAN](https://github.com/descriptinc/melgan-neurips) 
-and [Tacotron2](https://github.com/NVIDIA/tacotron2) to implement this.
+* [Alias-free-torch](https://github.com/junjun3518/alias-free-torch) (for anti-aliasing)
 
+* [Julius](https://github.com/adefossez/julius) (for low-pass filter)
+
+* [UnivNet](https://github.com/mindslab-ai/univnet) (for multi-resolution discriminator)

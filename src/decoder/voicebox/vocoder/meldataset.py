@@ -1,4 +1,8 @@
-""" from https://github.com/jik876/hifi-gan """
+# Copyright (c) 2022 NVIDIA CORPORATION.
+#   Licensed under the MIT license.
+
+# Adapted from https://github.com/jik876/hifi-gan under the MIT license.
+#   LICENSE is in incl_licenses directory.
 
 import math
 import os

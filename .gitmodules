@@ -1,3 +1,0 @@
-[submodule "src/encoder"]
-	path = src/encoder
-	url = https://github.com/facebookresearch/seamless_communication.git

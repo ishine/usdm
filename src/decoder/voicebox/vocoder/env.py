@@ -1,4 +1,5 @@
-""" from https://github.com/jik876/hifi-gan """
+# Adapted from https://github.com/jik876/hifi-gan under the MIT license.
+#   LICENSE is in incl_licenses directory.
 
 import os
 import shutil
